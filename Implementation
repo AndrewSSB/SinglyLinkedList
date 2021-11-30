@@ -1,1 +1,315 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <exception>
 
+using namespace std;
+
+class SinglyLinkedList{ // A Circular Singly Linked List is a LIST WHICH Tail node points to the head.
+private:
+    class Node{
+    public:
+        Node * next;
+        int data;
+    public:
+        Node(int data, Node * next){
+            this->data = data;
+            this->next = next;
+        }
+
+        Node(){
+            next = NULL;
+        }
+    };
+    Node * head;
+    Node * tail;
+    int _size;
+public:
+
+    SinglyLinkedList(){
+        head = NULL;
+        tail = NULL;
+        _size = 0;
+    }
+
+    int get_size(){return _size;}
+
+    bool isEmpty(){return _size == 0;} //Check if the list is empty.
+
+    Node * ReturnHead(){ return head;}
+
+    Node * ReturnTail(){return tail;}
+
+    void Clear(){
+        if (_size > 0){
+            Node * next1 = NULL;
+            while (head!=NULL){
+                next1 = head->next; //Need a copy so we can delete the current node.
+                head = NULL;
+                head = next1;       //Now we increment to the next node.
+            }
+            head = tail = next1 = NULL; //Finally we delete what's left.
+            _size = 0;
+        }
+        else{
+            cout << "List is empty";
+        }
+    }
+
+    void Push_Front(int data){
+        if (isEmpty()){
+            head = tail = new Node(data, NULL); //If list is empty, create it.
+
+            //tail = head = new Node();
+            //tail->data = data;
+        }else{
+            Node * new_node = new Node(data, head); //Else create a new node and swap it with the head node.
+            head = new_node;
+        }
+        _size++;
+    }
+
+    void Push_Back(int data){
+        if (isEmpty()){
+            head = tail = new Node(data, NULL); // Same here.
+        }else{
+            tail->next = new Node(data, NULL); //Else create a new node and swap it with the tail node.
+            tail = tail->next;
+        }
+        _size++;
+    }
+
+    int PeekFirst(){
+        if (isEmpty() || head == NULL) {cout << "\nList is empty "; return -1;}
+        return head->data;
+    }
+
+    int PeekLast(){
+        if (isEmpty() || head == NULL) {cout << "\nList is empty "; return -1;}
+        return tail->data;
+    }
+
+    void Remove_First(){
+        if (isEmpty()) {cout << "\nList is empty "; return;}
+
+        int data = head->data;  //Just to know which data we remove.
+
+        Node * new_node = new Node(); //Make a copy of the head node so we can delete it after.
+        new_node = head;
+        head = head->next;            //Make next node of the head, head of the list.
+        new_node = NULL;              //Now delete the previous head.
+
+        --_size;                      //Decrement it's size
+        if (isEmpty()) tail = NULL;   //If the list is empty, we must delete the tail.
+
+        delete new_node;
+
+        cout << "\nRemoved " << data << " from list.";
+    }
+
+    void Remove_Last(){
+        if (isEmpty()) {cout << "\nList is empty "; return;}
+
+        int data = tail->data;
+
+        if (head->next == NULL) //If the list has 1 element (which is clearly the head) we delete it.
+            head = NULL;
+        else{
+            Node * trav = head; //Otherwise traverse the list to the last -1 node.
+            while (trav->next->next != NULL){
+                trav = trav->next;
+            }                       // (1) -> (2) -> (3) -> (4)
+                                    // trav = (3).
+            trav->next = NULL; //Delete the last node.
+            delete tail;
+            tail = trav;    //Now make it the tail.
+            trav = NULL;    //We don't need it anymore so we delete it.
+        }
+        --_size;    //Decrement list size
+        cout << "\nRemoved " << data << " from list.";
+    }
+
+    void RemoveAtIndex(int index){
+        if (isEmpty()) {cout << "\nList is empty "; return;}
+        if (index >= _size || index < 0) {cout << "Invalid Argument"; return;}
+        if (index == 0) return Remove_First();          //Index goes from 0 to last - 1 (like an array).
+        if (index == _size-1) return Remove_Last();
+
+        Node * trav = head;
+
+        for (int i = 0; i < index-1; i++) // Traverse the list to the index - 1.
+           trav = trav->next;             // (1) -> (2) -> (3) -> (4), index = 2 => trav = (2)
+                                          //  0      1      2      3
+        Node * cpy = trav->next->next;    //Make a copy of it's next next node; cpy = (4) so we don't lose the list
+        int data = trav->next->data;
+        delete trav->next;  //delete the node at the given index; delete (3);
+
+        trav->next = cpy;   // (2)->next = (4)
+        cpy = NULL;         //Don't need cpy anymore.
+        delete cpy;
+        --_size;
+        cout << "\nRemoved " << data << " from list.";
+    }
+
+    void RemoveNode(Node * node){
+        if (node == NULL || isEmpty()) {cout << "\nCan't delete something NULL"; return;}
+        if (node == head) return Remove_First();
+        if (node->next == NULL) return Remove_Last();
+
+        Node * trav = head;
+
+        while (trav->next != node){ //Same idea goes here, but we work with nodes.
+            trav = trav->next;
+        }
+
+        Node * cpy = trav->next->next;
+        int data = cpy->data;
+        delete trav->next;
+
+        trav->next = cpy;
+        cpy = NULL;
+        delete cpy;
+        --_size;
+        cout << "\nRemoved " << data << " from list.";
+    }
+
+    int IndexOf(Node * node){
+        if (isEmpty() || node == NULL) throw "Invalid Argument";
+
+        int index = 0;
+
+        Node * trav = head;
+        while (trav != NULL){ //Traverse the list.
+            if (trav == node) //if we find the node we want, return it's index.
+                return index;
+            trav = trav->next;
+            index++;
+        }
+
+        return -1;
+    }
+
+    bool Contains(Node * node){
+        return IndexOf(node) != -1;
+    }
+
+    string ToString(){
+        if (isEmpty()) return "\nList is empty";
+        string sir = "[";
+        Node * trav = head;
+
+        while (trav->next != NULL){
+            sir.append(to_string(trav->data) + " ");
+            trav = trav->next;
+        }
+        return sir.append(to_string(trav->data) + "]");
+    }
+
+    Node * GetNode(int index){
+        if (index >= _size || index < 0) throw "\nInvalid Argument"; // Firt check the index
+        if (isEmpty()) throw "List is empty";  //Then if the list is empty
+        if (index == 0) return head;
+        if (index == _size-1) return tail;
+
+        Node * trav = head->next;
+        for (int i = 0; i < index-1; i++) //index-1 bcs index start from 0, not 1.
+           trav = trav->next;
+
+        return trav;
+    }
+
+    void InsertAt(int position, int data){
+        if (position > _size || position < 0) throw "Invalid Argument"; // Check the position.
+        if (position == 0) return Push_Front(data); //If we want to insert at position 0 we can just call push_front (doesn't care if the list is empty, we create it)
+        if (isEmpty()) throw "List is empty";
+        if (position == _size) return Push_Back(data);
+
+        Node * trav = head;
+        int i = 0;
+        while (trav->next != NULL && i < position-1){ //Traverse the list to position - 1.
+            trav = trav->next;
+            i++;
+        }
+
+        Node * cpy = trav->next;
+        trav->next = new Node(data, cpy);
+
+        trav = NULL;
+        cpy = NULL;
+        delete trav;
+        delete cpy;
+
+        ++_size;
+    }
+
+    void Reverse(){
+        if (isEmpty()) {cout << "List is empty"; return;}
+
+        Node * temp = head; //Swap the head and tail.
+        head = tail;
+        tail = temp;
+
+        //Initialize current, previous and next pointers
+        Node * trav = tail;
+        Node * prev = NULL;
+        Node * next = NULL;
+
+        while (trav != NULL){ // (0) -> (1) -> (2) => (0) <- (1) <- (2)
+            next = trav->next; //Store next
+            trav->next = prev; //reverse current node's pointer
+            //Move pointers one position ahead
+            prev = trav;
+            trav = next;
+        }
+        head = prev;
+    }
+
+    void Print(){
+        Node * trav = head;
+        while(trav != NULL){
+            cout << trav->data << " ";
+            trav = trav->next;
+        }
+    }
+};
+
+int main()
+{
+    SinglyLinkedList obj;
+    obj.Push_Back(10);
+    obj.Push_Back(19);
+    obj.Push_Back(54);
+    obj.Push_Back(104);
+    obj.Push_Front(40);
+    obj.Push_Front(5432);
+    obj.Push_Front(243);
+    obj.Push_Front(-551);
+    obj.Push_Front(20);
+    obj.Push_Front(41);
+    obj.Print();
+    cout << "\n" << obj.PeekFirst();
+    cout << "\n" << obj.PeekLast();
+    obj.Remove_First();
+    obj.Remove_Last();
+    cout << "\n" << obj.GetNode(2)->data;
+    obj.RemoveAtIndex(3);
+    obj.RemoveNode(obj.GetNode(2));
+    cout << "\n"<<obj.IndexOf(obj.GetNode(2));
+    cout << "\n"<<obj.Contains(obj.GetNode(2));
+    cout << "\n";
+    obj.Print();
+    cout << "\n";
+    obj.InsertAt(6, 2);
+    cout << "\n" << obj.ToString();
+    cout << "\n";
+    obj.Reverse();
+    obj.Print();
+    cout << "\n" << obj.PeekFirst();
+    cout << "\n" << obj.PeekLast();
+    obj.Remove_First();
+    obj.Remove_Last();
+    obj.Clear();
+    obj.Reverse();
+    cout << "\n" << obj.PeekFirst();
+    cout << "\n" << obj.PeekLast();
+}
