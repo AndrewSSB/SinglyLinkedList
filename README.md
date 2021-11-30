@@ -5,7 +5,7 @@ An easy implementation of a Singly Linked List.
 
 Pros:
   - Uses less memory;
-  - Sempler implementation;
+  - Simpler implementation;
 
 Cons:
   - Cannot easily access previous elements;
