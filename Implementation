@@ -46,13 +46,17 @@ public:
             while (head!=NULL){
                 next1 = head->next; //Need a copy so we can delete the current node.
                 head = NULL;
+                delete head;
                 head = next1;       //Now we increment to the next node.
             }
             head = tail = next1 = NULL; //Finally we delete what's left.
+            delete head;
+            delete tail;
+            delete next1;
             _size = 0;
         }
         else{
-            cout << "List is empty";
+            cout << "\nList is empty";
         }
     }
 
@@ -100,7 +104,7 @@ public:
         new_node = NULL;              //Now delete the previous head.
 
         --_size;                      //Decrement it's size
-        if (isEmpty()) tail = NULL;   //If the list is empty, we must delete the tail.
+        if (isEmpty()) {tail = NULL; delete tail;}   //If the list is empty, we must delete the tail.
 
         delete new_node;
 
@@ -112,8 +116,10 @@ public:
 
         int data = tail->data;
 
-        if (head->next == NULL) //If the list has 1 element (which is clearly the head) we delete it.
+        if (head->next == NULL){ //If the list has 1 element (which is clearly the head) we delete it.
             head = NULL;
+            delete head;
+        }
         else{
             Node * trav = head; //Otherwise traverse the list to the last -1 node.
             while (trav->next->next != NULL){
@@ -124,6 +130,7 @@ public:
             delete tail;
             tail = trav;    //Now make it the tail.
             trav = NULL;    //We don't need it anymore so we delete it.
+            delete trav;
         }
         --_size;    //Decrement list size
         cout << "\nRemoved " << data << " from list.";
@@ -147,6 +154,8 @@ public:
         trav->next = cpy;   // (2)->next = (4)
         cpy = NULL;         //Don't need cpy anymore.
         delete cpy;
+        trav = NULL;
+        delete trav;
         --_size;
         cout << "\nRemoved " << data << " from list.";
     }
@@ -169,6 +178,8 @@ public:
         trav->next = cpy;
         cpy = NULL;
         delete cpy;
+        trav = NULL;
+        delete trav;
         --_size;
         cout << "\nRemoved " << data << " from list.";
     }
@@ -211,7 +222,7 @@ public:
         if (index == 0) return head;
         if (index == _size-1) return tail;
 
-        Node * trav = head->next;
+        Node * trav = head;
         for (int i = 0; i < index-1; i++) //index-1 bcs index start from 0, not 1.
            trav = trav->next;
 
@@ -221,7 +232,7 @@ public:
     void InsertAt(int position, int data){
         if (position > _size || position < 0) throw "Invalid Argument"; // Check the position.
         if (position == 0) return Push_Front(data); //If we want to insert at position 0 we can just call push_front (doesn't care if the list is empty, we create it)
-        if (isEmpty()) throw "List is empty";
+        if (isEmpty()) throw "\nList is empty";
         if (position == _size) return Push_Back(data);
 
         Node * trav = head;
@@ -243,7 +254,7 @@ public:
     }
 
     void Reverse(){
-        if (isEmpty()) {cout << "List is empty"; return;}
+        if (isEmpty()) {cout << "\nList is empty"; return;}
 
         Node * temp = head; //Swap the head and tail.
         head = tail;
